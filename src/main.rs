@@ -1,6 +1,6 @@
 use std::env;
 
-use stack_calculator::{Expressions, StackCalculator};
+use stack_calculator::{Expressions, StackCalculator, StackElement};
 
 pub mod stack_calculator;
 
@@ -13,7 +13,7 @@ fn main() {
     } else {
         println!("No arguments provided")
     }
-    stack_calculator.evaluate();
+    println!("{}",stack_calculator.evaluate().unwrap_or(-1))
 }
 
 fn parse_equation(equation: &String, stack_calculator: &mut StackCalculator) {
@@ -21,7 +21,7 @@ fn parse_equation(equation: &String, stack_calculator: &mut StackCalculator) {
         let is_element_numeric = element.is_numeric();
         if is_element_numeric {
             let num = element.to_string().parse::<i32>().unwrap();
-            stack_calculator.push_number(num)
+            stack_calculator.push(StackElement::Number(num))
         } else {
             let operator = match element {
                 '+' => Expressions::ADD,
@@ -30,7 +30,7 @@ fn parse_equation(equation: &String, stack_calculator: &mut StackCalculator) {
                 '*' => Expressions::MULTIPLY,
                 _ => panic!("Unknown operator"),
             };
-            stack_calculator.push_expression(operator);
+            stack_calculator.push(StackElement::Operator(operator));
         }
     }
 }
