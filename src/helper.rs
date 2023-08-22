@@ -1,9 +1,10 @@
 pub mod parser_helper {
-    use crate::stack_calculator::{Expressions, StackCalculator, StackElement};
+    use crate::stack_calculator::{Expressions, StackElement};
     use std::env;
 
-    pub fn parse_equation(equation: &str, stack_calculator: &mut StackCalculator) {
+    pub fn parse_equation(equation: &str) -> Result<Vec<StackElement>, &str> {
         let mut current_number = String::new();
+        let mut stack_calculator: Vec<StackElement> = Vec::new();
 
         for element in equation.chars() {
             if element.is_whitespace() {
@@ -33,10 +34,11 @@ pub mod parser_helper {
         }
 
         if current_number.is_empty() {
-            return;
+            return Err("Something went wrong number might be missing");
         }
         let num = current_number.parse::<i32>().unwrap();
         stack_calculator.push(StackElement::Operand(num));
+        Ok(stack_calculator)
     }
 
     pub fn read_args() -> Vec<String> {

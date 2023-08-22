@@ -25,13 +25,10 @@ impl StackCalculator {
     pub fn new() -> Self {
         Self { stack: Vec::new() }
     }
-
-    pub fn push(&mut self, elem: StackElement) {
-        self.stack.push(elem);
-    }
-
-    pub fn evaluate(&self) -> Option<i32> {
-        None
+    pub fn populate_stack_with_parsed_expiression(&self,parsed_expression: Vec<StackElement>) -> Self {
+        Self {
+            stack: parsed_expression,
+        }
     }
 
     pub fn infix_to_postfix(&self) -> Vec<StackElement> {
@@ -79,27 +76,5 @@ impl StackCalculator {
         }
 
         operand_stack
-    }
-}
-
-//TODO: tests are pretty much useless at this point gotta make them more robust
-#[cfg(test)]
-mod tests {
-    use crate::stack_calculator::{Expressions, StackCalculator, StackElement};
-
-    #[test]
-    fn should_add_number_to_stack() {
-        let mut calc = StackCalculator::new();
-        calc.push(StackElement::Operand(5));
-        assert_eq!(1, calc.stack.len());
-    }
-
-    #[test]
-    fn should_add_expression_to_stack() {
-        let mut calc = StackCalculator::new();
-        calc.push(StackElement::Operand(5));
-        calc.push(StackElement::Operator(Expressions::Add));
-        calc.push(StackElement::Operand(3));
-        assert_eq!(3, calc.stack.len());
     }
 }
