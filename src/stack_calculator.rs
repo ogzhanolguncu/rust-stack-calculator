@@ -44,10 +44,7 @@ impl StackCalculator {
                     operand_stack.push(StackElement::Operand(*operand))
                 }
                 StackElement::Operator(operator) => match operator {
-                    Token::Add
-                    | Token::Subtract
-                    | Token::Multiply
-                    | Token::Divide => {
+                    Token::Add | Token::Subtract | Token::Multiply | Token::Divide => {
                         while operator_stack
                             .last()
                             .map_or(false, |top| precedence(top) >= precedence(operator))
@@ -84,7 +81,7 @@ impl StackCalculator {
 
 #[cfg(test)]
 mod stack_calculator_test {
-    use crate::helper::expression_parser::parse_expression;
+    use crate::helper::{expression_parser::parse_expression, ParseError};
 
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
@@ -113,7 +110,7 @@ mod stack_calculator_test {
 
     #[test]
     fn should_return_empty_when_input_is_empty() {
-        let input = " ";
+        let input = "";
         let stack_calculator: StackCalculator = StackCalculator::new();
 
         let parsed_expression: Vec<StackElement> = parse_expression(input).unwrap_or(vec![]);
@@ -122,5 +119,26 @@ mod stack_calculator_test {
             .infix_to_postfix();
 
         assert_eq!(postfix_result_variation, [])
+    }
+
+    #[test]
+    fn should_return_error_for_invalid_input() {
+        let input = "5 $ ";
+        let result = parse_expression(input);
+        assert_eq!(result.unwrap_err(), ParseError::UnknownOperator('$'));
+    }
+
+    #[test]
+    fn should_return_error_for_invalid_inputd() {
+        let input = "";
+        let result = parse_expression(input);
+        assert_eq!(result.unwrap_err(), ParseError::EmptyExpression);
+    }
+
+    #[test]
+    fn should_return_error_for_invalid_inputdf() {
+        let input = "+";
+        let result = parse_expression(input);
+        assert_eq!(result.unwrap_err(), ParseError::NotEnoughArguments);
     }
 }

@@ -1,7 +1,28 @@
-pub mod expression_parser {
-    use crate::stack_calculator::{Token, StackElement};
+#[derive(Debug, PartialEq)]
+pub enum ParseError {
+    EmptyExpression,
+    NotEnoughArguments,
+    UnknownOperator(char),
+}
 
-    pub fn parse_expression(equation: &str) -> Result<Vec<StackElement>, &'static str> {
+impl std::fmt::Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::EmptyExpression => write!(f, "The expression is empty."),
+            Self::NotEnoughArguments => write!(f, "The expression does not have enough arguments."),
+            Self::UnknownOperator(op) => write!(f, "Unknown operator: {}", op),
+        }
+    }
+}
+
+impl std::error::Error for ParseError {}
+
+pub mod expression_parser {
+    use crate::stack_calculator::{StackElement, Token};
+
+    use super::ParseError;
+
+    pub fn parse_expression(equation: &str) -> Result<Vec<StackElement>, ParseError> {
         let mut stack: Vec<StackElement> = Vec::new();
         let mut current_number: String = String::new();
 
@@ -27,7 +48,7 @@ pub mod expression_parser {
                 '/' => Token::Divide,
                 '(' => Token::LeftParen,
                 ')' => Token::RightParen,
-                _ => return Err("Unknown operator"),
+                unknown_char => return Err(ParseError::UnknownOperator(unknown_char)),
             };
             stack.push(StackElement::Operator(operator));
         }
@@ -37,7 +58,11 @@ pub mod expression_parser {
         }
 
         if stack.is_empty() {
-            return Err("Expression is empty");
+            return Err(ParseError::EmptyExpression);
+        }
+
+        if stack.len() < 3 {
+            return Err(ParseError::NotEnoughArguments);
         }
 
         Ok(stack)
