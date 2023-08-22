@@ -2,44 +2,50 @@ pub mod parser_helper {
     use crate::stack_calculator::{Expressions, StackElement};
     use std::env;
 
-    pub fn parse_equation(equation: &str) -> Result<Vec<StackElement>, &str> {
-        let mut current_number = String::new();
-        let mut stack_calculator: Vec<StackElement> = Vec::new();
+    pub fn parse_expression(equation: &str) -> Result<Vec<StackElement>, &'static str> {
+    let mut current_number = String::new();
+    let mut stack_calculator: Vec<StackElement> = Vec::new();
 
-        for element in equation.chars() {
-            if element.is_whitespace() {
-                continue;
-            };
-            if element.is_numeric() {
-                current_number.push(element);
-            } else {
-                if !current_number.is_empty() {
-                    let num = current_number.parse::<i32>().unwrap();
-                    stack_calculator.push(StackElement::Operand(num));
-                    current_number.clear();
-                }
-
-                let operator = match element {
-                    '+' => Expressions::Add,
-                    '-' => Expressions::Subtract,
-                    '/' => Expressions::Divide,
-                    '*' => Expressions::Multiply,
-                    '(' => Expressions::LeftParan,
-                    ')' => Expressions::RightParan,
-                    _ => panic!("Unknown operator"),
-                };
-
-                stack_calculator.push(StackElement::Operator(operator));
+    let push_number_if_any = |current_number: &mut String, stack_calculator: &mut Vec<StackElement>| {
+        if !current_number.is_empty() {
+            if let Ok(num) = current_number.parse::<i32>() {
+                stack_calculator.push(StackElement::Operand(num));
+                current_number.clear();
             }
         }
+    };
 
-        if current_number.is_empty() {
-            return Err("Something went wrong number might be missing");
+    for element in equation.chars() {
+        if element.is_whitespace() {
+            continue;
         }
-        let num = current_number.parse::<i32>().unwrap();
-        stack_calculator.push(StackElement::Operand(num));
-        Ok(stack_calculator)
+
+        if element.is_numeric() {
+            current_number.push(element);
+        } else {
+            push_number_if_any(&mut current_number, &mut stack_calculator);
+
+            let operator = match element {
+                '+' => Expressions::Add,
+                '-' => Expressions::Subtract,
+                '/' => Expressions::Divide,
+                '*' => Expressions::Multiply,
+                '(' => Expressions::LeftParan,
+                ')' => Expressions::RightParan,
+                _ => return Err("Unknown operator"),
+            };
+
+            stack_calculator.push(StackElement::Operator(operator));
+        }
     }
+
+    push_number_if_any(&mut current_number, &mut stack_calculator);
+
+    if stack_calculator.is_empty() {
+        return Err("Something went wrong; expression might be missing.");
+    }
+    Ok(stack_calculator)
+}
 
     pub fn read_args() -> Vec<String> {
         env::args().skip(1).collect()

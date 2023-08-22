@@ -1,4 +1,4 @@
-use crate::helper::parser_helper::parse_equation;
+use crate::helper::parser_helper::parse_expression;
 use helper::parser_helper::{first, read_args};
 use stack_calculator::{StackCalculator, StackElement};
 
@@ -10,10 +10,11 @@ fn main() {
     let stack_calculator: StackCalculator = StackCalculator::new();
 
     if let Some(equation) = first(&input) {
-        let parsed_expression: Vec<StackElement> = parse_equation(equation).unwrap_or(vec![]);
-        let postfix_result = stack_calculator
+        let parsed_expression: Vec<StackElement> = parse_expression(equation).unwrap_or(vec![]);
+        let postfix_result: Vec<StackElement> = stack_calculator
             .populate_stack_with_parsed_expiression(parsed_expression)
             .infix_to_postfix();
+
         println!("\x1b[93m{:?}\x1b[0m", postfix_result)
     } else {
         println!("No arguments provided")
