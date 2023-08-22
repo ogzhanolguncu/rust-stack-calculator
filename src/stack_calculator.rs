@@ -50,7 +50,7 @@ impl StackCalculator {
                     | Token::Divide => {
                         while operator_stack
                             .last()
-                            .map_or(false, |top| precedence(&top) >= precedence(operator))
+                            .map_or(false, |top| precedence(top) >= precedence(operator))
                         {
                             if let Some(op) = operator_stack.pop() {
                                 operand_stack.push(StackElement::Operator(op));

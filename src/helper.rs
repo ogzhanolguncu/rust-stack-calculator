@@ -43,7 +43,7 @@ pub mod expression_parser {
         Ok(stack)
     }
 
-    fn push_number_to_stack(current_number: &String, stack: &mut Vec<StackElement>) {
+    fn push_number_to_stack(current_number: &str, stack: &mut Vec<StackElement>) {
         let num = current_number.parse::<i32>().unwrap();
         stack.push(StackElement::Operand(num));
     }
