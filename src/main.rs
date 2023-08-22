@@ -1,43 +1,21 @@
-use std::env;
+use stack_calculator::{StackCalculator, StackElement};
+use crate::helper::parser_helper::parse_equation;
+use helper::parser_helper::{first, read_args};
 
-use stack_calculator::{Expressions, StackCalculator, StackElement};
-
+pub mod helper;
 pub mod stack_calculator;
-
+//TODO: WRITE SOME TEST TO COVER EXISTING CASES FIRST THEN CONTINUE WITH executing reverse postfix notation
 fn main() {
     let input = read_args(); // Renamed to read_args to better describe what it does
     let mut stack_calculator = StackCalculator::new();
 
     if let Some(equation) = first(&input) {
-        parse_equation(equation, &mut stack_calculator);
+        //TODO: this should directly return new Vec instead of mutating for better readability
+        parse_equation(equation, &mut stack_calculator); //INFO: Parses equation into readable format from string input then turns them into StackElement and then mutates stack_calculator
+
+        let postfix: Vec<StackElement> = stack_calculator.infix_to_postfix();
+        println!("\x1b[93m{:?}\x1b[0m", postfix)
     } else {
         println!("No arguments provided")
     }
-    println!("{}",stack_calculator.evaluate().unwrap_or(-1))
-}
-
-fn parse_equation(equation: &String, stack_calculator: &mut StackCalculator) {
-    for element in equation.replace(" ", "").chars() {
-        let is_element_numeric = element.is_numeric();
-        if is_element_numeric {
-            let num = element.to_string().parse::<i32>().unwrap();
-            stack_calculator.push(StackElement::Number(num))
-        } else {
-            let operator = match element {
-                '+' => Expressions::ADD,
-                '-' => Expressions::SUBTRACT,
-                '/' => Expressions::DIVIDE,
-                '*' => Expressions::MULTIPLY,
-                _ => panic!("Unknown operator"),
-            };
-            stack_calculator.push(StackElement::Operator(operator));
-        }
-    }
-}
-
-fn read_args() -> Vec<String> {
-    env::args().skip(1).collect()
-}
-fn first<T>(v: &Vec<T>) -> Option<&T> {
-    v.first()
 }
