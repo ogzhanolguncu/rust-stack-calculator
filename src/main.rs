@@ -1,15 +1,15 @@
-use crate::helper::parser_helper::parse_expression;
-use helper::parser_helper::{first, read_args};
+use crate::helper::expression_parser::parse_expression;
 use stack_calculator::{StackCalculator, StackElement};
+use utils::{first, read_command_args};
 
-pub mod helper;
-pub mod stack_calculator;
-//TODO: WRITE SOME TEST TO COVER EXISTING CASES FIRST THEN CONTINUE WITH executing reverse postfix notation
+mod helper;
+mod stack_calculator;
+mod utils;
+
 fn main() {
-    let input = read_args(); // Renamed to read_args to better describe what it does
     let stack_calculator: StackCalculator = StackCalculator::new();
 
-    if let Some(equation) = first(&input) {
+    if let Some(equation) = first(&read_command_args()) {
         let parsed_expression: Vec<StackElement> = parse_expression(equation).unwrap_or(vec![]);
         let postfix_result: Vec<StackElement> = stack_calculator
             .populate_stack_with_parsed_expiression(parsed_expression)

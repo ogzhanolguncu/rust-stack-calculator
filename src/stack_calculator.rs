@@ -1,19 +1,19 @@
-use crate::helper::parser_helper::precedence;
+use crate::helper::expression_parser::precedence;
 
 #[derive(PartialEq, Debug)]
 pub enum StackElement {
     Operand(i32),
-    Operator(Expressions),
+    Operator(Token),
 }
 
 #[derive(PartialEq, Debug, Clone)]
-pub enum Expressions {
+pub enum Token {
     Add,
     Subtract,
     Multiply,
     Divide,
-    LeftParan,
-    RightParan,
+    LeftParen,
+    RightParen,
 }
 
 #[derive(Debug)]
@@ -36,7 +36,7 @@ impl StackCalculator {
 
     pub fn infix_to_postfix(&self) -> Vec<StackElement> {
         let mut operand_stack: Vec<StackElement> = Vec::new();
-        let mut operator_stack: Vec<Expressions> = Vec::new();
+        let mut operator_stack: Vec<Token> = Vec::new();
 
         for item in &self.stack {
             match item {
@@ -44,10 +44,10 @@ impl StackCalculator {
                     operand_stack.push(StackElement::Operand(*operand))
                 }
                 StackElement::Operator(operator) => match operator {
-                    Expressions::Add
-                    | Expressions::Subtract
-                    | Expressions::Multiply
-                    | Expressions::Divide => {
+                    Token::Add
+                    | Token::Subtract
+                    | Token::Multiply
+                    | Token::Divide => {
                         while operator_stack
                             .last()
                             .map_or(false, |top| precedence(&top) >= precedence(operator))
@@ -58,10 +58,10 @@ impl StackCalculator {
                         }
                         operator_stack.push(operator.clone());
                     }
-                    Expressions::LeftParan => operator_stack.push(Expressions::LeftParan),
-                    Expressions::RightParan => {
+                    Token::LeftParen => operator_stack.push(Token::LeftParen),
+                    Token::RightParen => {
                         while let Some(top) = operator_stack.last() {
-                            if *top == Expressions::LeftParan {
+                            if *top == Token::LeftParen {
                                 break;
                             }
                             if let Some(op) = operator_stack.pop() {
@@ -84,7 +84,7 @@ impl StackCalculator {
 
 #[cfg(test)]
 mod stack_calculator_test {
-    use crate::helper::parser_helper::parse_expression;
+    use crate::helper::expression_parser::parse_expression;
 
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
@@ -105,12 +105,11 @@ mod stack_calculator_test {
                 StackElement::Operand(5),
                 StackElement::Operand(6),
                 StackElement::Operand(8),
-                StackElement::Operator(Expressions::Multiply),
-                StackElement::Operator(Expressions::Add)
+                StackElement::Operator(Token::Multiply),
+                StackElement::Operator(Token::Add)
             ]
         )
     }
-
 
     #[test]
     fn should_return_empty_when_input_is_empty() {
