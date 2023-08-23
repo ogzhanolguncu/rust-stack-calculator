@@ -34,7 +34,7 @@ impl StackCalculator {
         }
     }
 
-    pub fn infix_to_postfix(&self) -> Vec<StackElement> {
+    pub fn infix_to_postfix(&self) -> Self {
         let mut operand_stack: Vec<StackElement> = Vec::new();
         let mut operator_stack: Vec<Token> = Vec::new();
 
@@ -75,7 +75,31 @@ impl StackCalculator {
             operand_stack.push(StackElement::Operator(op));
         }
 
-        operand_stack
+        Self {
+            stack: operand_stack,
+        }
+    }
+
+    pub fn evaluate(&self) -> Vec<i32> {
+        let mut inner_stack: Vec<i32> = Vec::new();
+        for item in &self.stack {
+            match item {
+                StackElement::Operand(operand) => inner_stack.push(*operand),
+                StackElement::Operator(operator) => {
+                    let n1 = inner_stack.pop().unwrap();
+                    let n2 = inner_stack.pop().unwrap();
+
+                    match operator {
+                        Token::Add => inner_stack.push(n1 + n2),
+                        Token::Subtract => inner_stack.push(n1 - n2),
+                        Token::Multiply => inner_stack.push(n1 * n2),
+                        Token::Divide => inner_stack.push(n1 / n2),
+                        _ => panic!("Unknown argument"),
+                    }
+                }
+            }
+        }
+        inner_stack
     }
 }
 
@@ -97,7 +121,7 @@ mod stack_calculator_test {
             .infix_to_postfix();
 
         assert_eq!(
-            postfix_result_variation,
+            postfix_result_variation.stack,
             [
                 StackElement::Operand(5),
                 StackElement::Operand(6),
@@ -118,25 +142,39 @@ mod stack_calculator_test {
             .populate_stack_with_parsed_expiression(parsed_expression)
             .infix_to_postfix();
 
-        assert_eq!(postfix_result_variation, [])
+        assert_eq!(postfix_result_variation.stack, [])
     }
 
     #[test]
-    fn should_return_error_for_invalid_input() {
+    fn should_return_correct_answer() {
+        let input = "(3 * 4) + (5 * 2)";
+        let stack_calculator: StackCalculator = StackCalculator::new();
+
+        let parsed_expression: Vec<StackElement> = parse_expression(input).unwrap_or(vec![]);
+        let postfix_result_variation = stack_calculator
+            .populate_stack_with_parsed_expiression(parsed_expression)
+            .infix_to_postfix()
+            .evaluate();
+
+        assert_eq!(*postfix_result_variation.first().unwrap(), 22)
+    }
+
+    #[test]
+    fn should_return_error_for_unknown_operator() {
         let input = "5 $ ";
         let result = parse_expression(input);
         assert_eq!(result.unwrap_err(), ParseCustomError::UnknownOperator('$'));
     }
 
     #[test]
-    fn should_return_error_for_invalid_inputd() {
+    fn should_return_error_for_empty_expression() {
         let input = "";
         let result = parse_expression(input);
         assert_eq!(result.unwrap_err(), ParseCustomError::EmptyExpression);
     }
 
     #[test]
-    fn should_return_error_for_invalid_inputdf() {
+    fn should_return_error_for_not_enough_arguments() {
         let input = "+";
         let result = parse_expression(input);
         assert_eq!(result.unwrap_err(), ParseCustomError::NotEnoughArguments);
