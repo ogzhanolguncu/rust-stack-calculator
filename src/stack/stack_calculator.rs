@@ -1,4 +1,4 @@
-use crate::helper::expression_parser::precedence;
+use super::helper::expression_parser::precedence;
 
 #[derive(PartialEq, Debug)]
 pub enum StackElement {
@@ -81,9 +81,9 @@ impl StackCalculator {
 
 #[cfg(test)]
 mod stack_calculator_test {
-    use crate::helper::{expression_parser::parse_expression, ParseError};
 
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use crate::stack::{error::ParseCustomError, helper::expression_parser::parse_expression};
+
     use super::*;
 
     #[test]
@@ -125,20 +125,20 @@ mod stack_calculator_test {
     fn should_return_error_for_invalid_input() {
         let input = "5 $ ";
         let result = parse_expression(input);
-        assert_eq!(result.unwrap_err(), ParseError::UnknownOperator('$'));
+        assert_eq!(result.unwrap_err(), ParseCustomError::UnknownOperator('$'));
     }
 
     #[test]
     fn should_return_error_for_invalid_inputd() {
         let input = "";
         let result = parse_expression(input);
-        assert_eq!(result.unwrap_err(), ParseError::EmptyExpression);
+        assert_eq!(result.unwrap_err(), ParseCustomError::EmptyExpression);
     }
 
     #[test]
     fn should_return_error_for_invalid_inputdf() {
         let input = "+";
         let result = parse_expression(input);
-        assert_eq!(result.unwrap_err(), ParseError::NotEnoughArguments);
+        assert_eq!(result.unwrap_err(), ParseCustomError::NotEnoughArguments);
     }
 }

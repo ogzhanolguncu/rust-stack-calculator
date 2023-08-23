@@ -1,10 +1,10 @@
-use crate::helper::expression_parser::parse_expression;
-use stack_calculator::{StackCalculator, StackElement};
-use utils::{first, read_command_args};
+mod stack;
+use stack::{
+    stack_calculator::StackCalculator,
+    utils::{first, read_command_args},
+};
 
-mod helper;
-mod stack_calculator;
-mod utils;
+use crate::stack::{helper::expression_parser::parse_expression, stack_calculator::StackElement};
 
 fn main() {
     let stack_calculator: StackCalculator = StackCalculator::new();
