@@ -25,7 +25,7 @@ impl StackCalculator {
     pub fn new() -> Self {
         Self { stack: Vec::new() }
     }
-    pub fn populate_stack_with_parsed_expiression(
+    pub fn populate_stack_with_parsed_expression(
         &self,
         parsed_expression: Vec<StackElement>,
     ) -> Self {
@@ -117,7 +117,7 @@ mod stack_calculator_test {
 
         let parsed_expression: Vec<StackElement> = parse_expression(input).unwrap_or(vec![]);
         let postfix_result_variation = stack_calculator
-            .populate_stack_with_parsed_expiression(parsed_expression)
+            .populate_stack_with_parsed_expression(parsed_expression)
             .infix_to_postfix();
 
         assert_eq!(
@@ -139,7 +139,7 @@ mod stack_calculator_test {
 
         let parsed_expression: Vec<StackElement> = parse_expression(input).unwrap_or(vec![]);
         let postfix_result_variation = stack_calculator
-            .populate_stack_with_parsed_expiression(parsed_expression)
+            .populate_stack_with_parsed_expression(parsed_expression)
             .infix_to_postfix();
 
         assert_eq!(postfix_result_variation.stack, [])
@@ -152,7 +152,7 @@ mod stack_calculator_test {
 
         let parsed_expression: Vec<StackElement> = parse_expression(input).unwrap_or(vec![]);
         let postfix_result_variation = stack_calculator
-            .populate_stack_with_parsed_expiression(parsed_expression)
+            .populate_stack_with_parsed_expression(parsed_expression)
             .infix_to_postfix()
             .evaluate();
 
