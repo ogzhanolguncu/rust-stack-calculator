@@ -1,4 +1,7 @@
-use super::{error::ParseCustomError, helper::expression_parser::precedence};
+use super::{
+    error::ParseCustomError,
+    stack_calculator_utils::{convert_operators_to_postfix, convert_right_paren_to_postfix},
+};
 
 #[derive(PartialEq, Debug)]
 pub enum StackElement {
@@ -45,35 +48,21 @@ impl StackCalculator {
                 }
                 StackElement::Operator(operator) => match operator {
                     Token::Add | Token::Subtract | Token::Multiply | Token::Divide => {
-                        while operator_stack
-                            .last()
-                            .map_or(false, |top| precedence(top) >= precedence(operator))
-                        {
-                            if let Some(op) = operator_stack.pop() {
-                                operand_stack.push(StackElement::Operator(op));
-                            }
-                        }
-                        operator_stack.push(operator.clone());
+                        convert_operators_to_postfix(
+                            &mut operator_stack,
+                            operator,
+                            &mut operand_stack,
+                        );
                     }
                     Token::LeftParen => operator_stack.push(Token::LeftParen),
                     Token::RightParen => {
-                        while let Some(top) = operator_stack.last() {
-                            if *top == Token::LeftParen {
-                                break;
-                            }
-                            if let Some(op) = operator_stack.pop() {
-                                operand_stack.push(StackElement::Operator(op));
-                            }
-                        }
-                        operator_stack.pop(); // This will pop the LeftParan, if it exists
+                        convert_right_paren_to_postfix(&mut operator_stack, &mut operand_stack)
                     }
                 },
             }
         }
 
-        while let Some(op) = operator_stack.pop() {
-            operand_stack.push(StackElement::Operator(op));
-        }
+        operand_stack.extend(operator_stack.into_iter().rev().map(StackElement::Operator));
 
         Self {
             stack: operand_stack,
@@ -151,7 +140,10 @@ mod stack_calculator_test {
             .infix_to_postfix()
             .evaluate();
 
-        assert_eq!(postfix_result_variation.unwrap_err(), ParseCustomError::DivisionByZero)
+        assert_eq!(
+            postfix_result_variation.unwrap_err(),
+            ParseCustomError::DivisionByZero
+        )
     }
 
     #[test]
