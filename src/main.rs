@@ -1,4 +1,5 @@
 mod stack;
+
 use stack::{stack_calculator::StackCalculator, utils::read_command_args};
 
 use crate::stack::{helper::expression_parser::parse_expression, stack_calculator::StackElement};
@@ -13,7 +14,10 @@ fn main() {
             .infix_to_postfix()
             .evaluate();
 
-        println!("Result: {}", &postfix_result.first().unwrap_or(&-1));
+        match postfix_result {
+            Ok(res) => println!("Result: {}", &res.get(0).unwrap()),
+            Err(err) => println!("{}",err),
+        }
     } else {
         println!("No arguments provided")
     }

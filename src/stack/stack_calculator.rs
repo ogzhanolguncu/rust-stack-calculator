@@ -1,4 +1,4 @@
-use super::helper::expression_parser::precedence;
+use super::{error::ParseCustomError, helper::expression_parser::precedence};
 
 #[derive(PartialEq, Debug)]
 pub enum StackElement {
@@ -80,12 +80,15 @@ impl StackCalculator {
         }
     }
 
-    pub fn evaluate(&self) -> Vec<i32> {
+    pub fn evaluate(&self) -> Result<Vec<i32>, ParseCustomError> {
         let mut inner_stack: Vec<i32> = Vec::new();
         for item in &self.stack {
             match item {
                 StackElement::Operand(operand) => inner_stack.push(*operand),
                 StackElement::Operator(operator) => {
+                    if inner_stack.len() < 2 {
+                        return Err(ParseCustomError::NotEnoughArguments);
+                    }
                     let n1 = inner_stack.pop().unwrap();
                     let n2 = inner_stack.pop().unwrap();
 
@@ -93,13 +96,18 @@ impl StackCalculator {
                         Token::Add => inner_stack.push(n1 + n2),
                         Token::Subtract => inner_stack.push(n1 - n2),
                         Token::Multiply => inner_stack.push(n1 * n2),
-                        Token::Divide => inner_stack.push(n1 / n2),
-                        _ => panic!("Unknown argument"),
+                        Token::Divide => {
+                            if n1 == 0 {
+                                return Err(ParseCustomError::DivisionByZero);
+                            }
+                            inner_stack.push(n2 / n1) // Note: this depends on your stack semantics
+                        }
+                        err => return Err(ParseCustomError::UnknownToken(err.clone())),
                     }
                 }
             }
         }
-        inner_stack
+        Ok(inner_stack)
     }
 }
 
@@ -133,6 +141,20 @@ mod stack_calculator_test {
     }
 
     #[test]
+    fn should_not_throw_when_dived_by_zero() {
+        let input = "6 / 0";
+        let stack_calculator: StackCalculator = StackCalculator::new();
+
+        let parsed_expression: Vec<StackElement> = parse_expression(input).unwrap_or(vec![]);
+        let postfix_result_variation = stack_calculator
+            .populate_stack_with_parsed_expression(parsed_expression)
+            .infix_to_postfix()
+            .evaluate();
+
+        assert_eq!(postfix_result_variation.unwrap_err(), ParseCustomError::DivisionByZero)
+    }
+
+    #[test]
     fn should_return_empty_when_input_is_empty() {
         let input = "";
         let stack_calculator: StackCalculator = StackCalculator::new();
@@ -156,7 +178,7 @@ mod stack_calculator_test {
             .infix_to_postfix()
             .evaluate();
 
-        assert_eq!(*postfix_result_variation.first().unwrap(), 22)
+        assert_eq!(*postfix_result_variation.unwrap().first().unwrap(), 22)
     }
 
     #[test]
